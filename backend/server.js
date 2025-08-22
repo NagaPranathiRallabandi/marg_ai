@@ -4,12 +4,13 @@ const { Server } = require("socket.io");
 const axios = require('axios');
 const multer = require('multer');
 const FormData = require('form-data');
-const cors = require('cors'); // 1. Import the cors package
+const cors = require('cors');
 require('dotenv').config();
 
 // --- Initialization ---
 const app = express();
-app.use(cors()); // 2. Add the CORS middleware to your Express app
+app.use(cors());
+app.use(express.json());
 
 const server = http.createServer(app);
 const io = new Server(server, {
@@ -29,6 +30,72 @@ const dbConnection = require('./src/config/db');
 // --- API Routes ---
 const signalRoutes = require('./src/api/signalRoutes');
 app.use('/api', signalRoutes);
+
+// --- In-Memory Cache for Signals ---
+let allSignals = [];
+dbConnection.query('SELECT * FROM traffic_signals', (err, results) => {
+  if (err) {
+    console.error("Could not pre-load traffic signals:", err);
+    return;
+  }
+  allSignals = results;
+  console.log(`Pre-loaded ${allSignals.length} traffic signals into memory.`);
+});
+
+// --- Helper function to find the closest signal to a point ---
+const findClosestSignal = (point, signals) => {
+    let closestSignal = null;
+    let minDistance = Infinity;
+    signals.forEach(signal => {
+        const distance = Math.sqrt(Math.pow(point[1] - signal.latitude, 2) + Math.pow(point[0] - signal.longitude, 2));
+        if (distance < minDistance) {
+            minDistance = distance;
+            closestSignal = signal;
+        }
+    });
+    return closestSignal;
+};
+
+// --- REVERTED ROUTING LOGIC USING OSRM (FREE DEMO SERVER) ---
+app.post('/api/calculate-route', async (req, res) => {
+  const { start, end } = req.body; // Expects { start: [lat, lng], end: [lat, lng] }
+
+  if (!start || !end) {
+    return res.status(400).json({ error: 'Start and end points are required.' });
+  }
+
+  // OSRM API URL format: {longitude},{latitude};{longitude},{latitude}
+  const osrmUrl = `http://router.project-osrm.org/route/v1/driving/${start[1]},${start[0]};${end[1]},${end[0]}?overview=full&geometries=geojson`;
+
+  try {
+    const response = await axios.get(osrmUrl);
+    const routeGeoJSON = response.data.routes[0].geometry;
+    
+    const routeSignals = new Set();
+    routeGeoJSON.coordinates.forEach(point => {
+        // OSRM gives [lng, lat], our signals are [lat, lng]
+        const closestSignal = findClosestSignal(point, allSignals);
+        // A threshold to consider a signal "on the route"
+        if (closestSignal && Math.sqrt(Math.pow(point[1] - closestSignal.latitude, 2) + Math.pow(point[0] - closestSignal.longitude, 2)) < 0.005) {
+            routeSignals.add(closestSignal);
+        }
+    });
+
+    const signalsOnRoute = Array.from(routeSignals);
+
+    console.log(`Calculated route with ${signalsOnRoute.length} signals using OSRM.`);
+
+    res.json({
+      route: routeGeoJSON,
+      signals: signalsOnRoute
+    });
+
+  } catch (error) {
+    console.error("Error fetching route from OSRM:", error.message);
+    res.status(500).json({ error: 'Failed to calculate route.' });
+  }
+});
+
 
 // --- DETECTION MEMORY & CONFIRMATION LOGIC ---
 const detectionMemory = new Map();
@@ -77,57 +144,16 @@ app.post('/api/detect-vehicle/:signalId', upload.single('image'), async (req, re
   }
 });
 
-// Other routes...
-app.post('/api/clear-signal/:signalId', (req, res) => {
-  const { signalId } = req.params;
-  const alertData = {
-    signalId: parseInt(signalId),
-    newStatus: 'GREEN'
-  };
-  io.emit('signal_cleared', alertData);
-  console.log(`>>> Signal ${signalId} has been cleared to GREEN`);
-  res.json({ message: `Signal ${signalId} status updated to GREEN` });
-});
-
-// --- Green Corridor Simulation Endpoint ---
-app.post('/api/simulate-green-corridor', (req, res) => {
-  console.log('>>> Starting Green Corridor Simulation...');
-
-  // A predefined route for the demo (e.g., from Signal 1 to Signal 3)
-  const routeSignalIds = [1, 2, 3]; 
-
-  // Function to clear signals one by one with a delay
-  const clearNextSignal = (index) => {
-    if (index >= routeSignalIds.length) {
-      console.log('>>> Green Corridor Simulation Complete.');
-      return;
-    }
-
-    const signalId = routeSignalIds[index];
-    const alertData = {
-      signalId: signalId,
-      newStatus: 'GREEN'
-    };
-    
-    io.emit('signal_cleared', alertData);
-    console.log(`>>> Clearing signal ${signalId} for Green Corridor.`);
-
-    // Wait 2 seconds before clearing the next signal
-    setTimeout(() => {
-      clearNextSignal(index + 1);
-    }, 2000);
-  };
-
-  // Start the simulation
-  clearNextSignal(0);
-
-  res.json({ message: 'Green Corridor simulation started.' });
-});
-
 
 // --- WebSocket & Server Startup ---
 io.on('connection', (socket) => {
   console.log('Client connected to WebSocket!');
+  socket.on('start_trip', (data) => {
+    io.emit('trip_started', data);
+  });
+  socket.on('update_location', (data) => {
+    io.emit('location_updated', data);
+  });
   socket.on('disconnect', () => {
     console.log('Client disconnected.');
   });
@@ -137,4 +163,3 @@ const PORT = process.env.PORT || 5000;
 server.listen(PORT, () => {
   console.log(`Server is running on http://localhost:${PORT}`);
 });
-  

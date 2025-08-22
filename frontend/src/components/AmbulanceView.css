@@ -1,0 +1,11 @@
+.route-planner {
+  padding: 10px;
+  background-color: #f8f9fa;
+  border-bottom: 1px solid #dee2e6;
+  text-align: center;
+}
+.route-planner select, .route-planner button {
+  margin: 0 10px;
+  padding: 8px;
+  font-size: 1rem;
+}
