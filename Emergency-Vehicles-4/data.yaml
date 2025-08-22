@@ -1,0 +1,13 @@
+train: ../train/images
+val: ../valid/images
+test: ../test/images
+
+nc: 1
+names: ['emergency']
+
+roboflow:
+  workspace: cia-kjce2
+  project: emergency-vehicles-pg0eq
+  version: 4
+  license: Private
+  url: https://universe.roboflow.com/cia-kjce2/emergency-vehicles-pg0eq/dataset/4

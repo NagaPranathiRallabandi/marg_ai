@@ -1,0 +1,37 @@
+.control-panel {
+  position: fixed;
+  bottom: 20px;
+  left: 50%;
+  transform: translateX(-50%);
+  background-color: white;
+  padding: 15px 25px;
+  border-radius: 8px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+  z-index: 1000; /* Ensure it's on top of the map */
+  text-align: center;
+}
+
+.control-panel h4 {
+  margin: 0 0 10px 0;
+}
+
+.control-panel button {
+  padding: 10px 20px;
+  font-size: 1rem;
+  font-weight: bold;
+  color: white;
+  background-color: #28a745; /* Green color */
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+  transition: background-color 0.2s;
+}
+
+.control-panel button:hover:not(:disabled) {
+  background-color: #218838;
+}
+
+.control-panel button:disabled {
+  background-color: #6c757d;
+  cursor: not-allowed;
+}
