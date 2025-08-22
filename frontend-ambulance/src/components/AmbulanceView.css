@@ -1,6 +1,6 @@
-.control-panel {
+.route-planner {
   position: fixed;
-  bottom: 20px;
+  top: 20px;
   left: 50%;
   transform: translateX(-50%);
   background-color: var(--panel-background);
@@ -10,14 +10,27 @@
   z-index: 1000;
   text-align: center;
   border: 1px solid var(--border-color);
+  display: flex;
+  align-items: center;
+  gap: 10px;
 }
 
-.control-panel h4 {
-  margin: 0 0 10px 0;
+.route-planner h2 {
+  margin: 0;
+  font-size: 1.2rem;
   color: var(--text-color);
 }
 
-.control-panel button {
+.route-planner select {
+  padding: 8px;
+  font-size: 1rem;
+  background-color: #333;
+  color: var(--text-color);
+  border: 1px solid var(--border-color);
+  border-radius: 4px;
+}
+
+.route-planner button {
   padding: 10px 20px;
   font-size: 1rem;
   font-weight: bold;
@@ -28,23 +41,14 @@
   cursor: pointer;
   transition: background-color 0.2s;
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
-  margin: 0 5px; /* Add spacing between buttons */
 }
 
-.control-panel button:hover:not(:disabled) {
+.route-planner button:hover:not(:disabled) {
   background-color: #218838;
 }
 
-.control-panel button:disabled {
+.route-planner button:disabled {
   background-color: #6c757d;
   cursor: not-allowed;
   box-shadow: none;
-}
-
-.cancel-button {
-  background-color: var(--alert-color) !important;
-}
-
-.cancel-button:hover:not(:disabled) {
-  background-color: #c82333 !important;
 }

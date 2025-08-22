@@ -5,8 +5,9 @@ import axios from 'axios';
 import L from 'leaflet';
 import { socket } from '../socket'; // Import the shared socket
 
+// --- Final working blip
 const ambulanceIcon = new L.Icon({
-    iconUrl: 'https://cdn-icons-png.flaticon.com/128/3448/3448632.png',
+    iconUrl: '/ambulance.png',
     iconSize: [40, 40],
 });
 
@@ -82,7 +83,7 @@ function AmbulanceView() {
         </button>
       </div>
       <MapContainer center={[16.5062, 80.6480]} zoom={14} style={{ height: 'calc(100vh - 80px)', width: '100%' }}>
-        <TileLayer url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png" />
+        <TileLayer url="https://tiles.stadiamaps.com/tiles/alidade_smooth_dark/{z}/{x}/{y}{r}.png" attribution='&copy; <a href="https://stadiamaps.com/">Stadia Maps</a> &copy; <a href="https://openmaptiles.org/">OpenMapTiles</a> &copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors' />
         {route && <Polyline positions={route.coordinates.map(p => [p[1], p[0]])} color="blue" />}
         {ambulancePosition && <Marker position={ambulancePosition} icon={ambulanceIcon} />}
       </MapContainer>

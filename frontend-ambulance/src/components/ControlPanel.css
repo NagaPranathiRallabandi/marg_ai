@@ -3,18 +3,16 @@
   bottom: 20px;
   left: 50%;
   transform: translateX(-50%);
-  background-color: var(--panel-background);
+  background-color: white;
   padding: 15px 25px;
   border-radius: 8px;
-  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.4);
-  z-index: 1000;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+  z-index: 1000; /* Ensure it's on top of the map */
   text-align: center;
-  border: 1px solid var(--border-color);
 }
 
 .control-panel h4 {
   margin: 0 0 10px 0;
-  color: var(--text-color);
 }
 
 .control-panel button {
@@ -22,13 +20,11 @@
   font-size: 1rem;
   font-weight: bold;
   color: white;
-  background-color: var(--primary-color);
+  background-color: #28a745; /* Green color */
   border: none;
   border-radius: 5px;
   cursor: pointer;
   transition: background-color 0.2s;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
-  margin: 0 5px; /* Add spacing between buttons */
 }
 
 .control-panel button:hover:not(:disabled) {
@@ -38,13 +34,4 @@
 .control-panel button:disabled {
   background-color: #6c757d;
   cursor: not-allowed;
-  box-shadow: none;
-}
-
-.cancel-button {
-  background-color: var(--alert-color) !important;
-}
-
-.cancel-button:hover:not(:disabled) {
-  background-color: #c82333 !important;
 }

@@ -1,0 +1,27 @@
+.view-switcher {
+  position: fixed;
+  top: 10px;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 2000;
+  background-color: white;
+  padding: 5px;
+  border-radius: 8px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+  display: flex;
+  gap: 5px;
+}
+
+.view-switcher button {
+  padding: 8px 15px;
+  font-size: 1rem;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+  background-color: #f0f0f0;
+}
+
+.view-switcher button.active {
+  background-color: #007bff;
+  color: white;
+}

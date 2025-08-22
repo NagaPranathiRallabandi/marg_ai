@@ -2,16 +2,18 @@ import React, { useState, useEffect } from 'react';
 import { MapContainer, TileLayer, Marker, Polyline } from 'react-leaflet';
 import 'leaflet/dist/leaflet.css';
 import axios from 'axios';
+import io from 'socket.io-client';
 import L from 'leaflet';
 import SignalMarker from './SignalMarker';
 import LogPanel from './LogPanel';
-import { socket } from '../socket'; // Import the shared socket
 
-// --- Final working blip
 const ambulanceIcon = new L.Icon({
-    iconUrl: '/ambulance.png',
+    iconUrl: 'https://cdn-icons-png.flaticon.com/128/3448/3448632.png',
     iconSize: [40, 40],
+    className: 'custom-ambulance-icon'
 });
+
+const socket = io('http://localhost:5000');
 
 function PoliceView() {
   const [signals, setSignals] = useState([]);
@@ -34,48 +36,46 @@ function PoliceView() {
 
   useEffect(() => {
     addLog("Police dashboard initialized.");
-    socket.connect(); // Manually connect the shared socket
-    
+    socket.on('connect', () => addLog("Real-time connection established."));
+
     axios.get('http://localhost:5000/api/signals')
       .then(response => setSignals(response.data));
 
-    const onTripStarted = (data) => {
+    socket.on('trip_started', (data) => {
       addLog("ALERT: New ambulance trip started!");
       setActiveRoute(data.route);
+      setAmbulancePosition([data.route.coordinates[0][1], data.route.coordinates[0][0]]);
+    });
+
+    socket.on('location_updated', (data) => {
       setAmbulancePosition(data.position);
-    };
-    const onLocationUpdate = (data) => setAmbulancePosition(data.position);
-    const onSignalCleared = (data) => {
-        setSignals(cs => cs.map(s => s.id === data.signalId ? { ...s, status: 'GREEN' } : s));
-    };
-    const onTripEnded = () => {
-        addLog("Ambulance has reached its destination.");
-        setActiveRoute(null);
-        setAmbulancePosition(null);
-    };
+    });
+    
+    socket.on('signal_cleared', (data) => {
+        setSignals(currentSignals => 
+            currentSignals.map(s => 
+              s.id === data.signalId ? { ...s, status: 'GREEN' } : s
+            )
+        );
+    });
 
-    socket.on('trip_started', onTripStarted);
-    socket.on('update_location', onLocationUpdate);
-    socket.on('signal_cleared', onSignalCleared);
-    socket.on('trip_ended', onTripEnded);
-
-    return () => {
-      socket.off('trip_started', onTripStarted);
-      socket.off('update_location', onLocationUpdate);
-      socket.off('signal_cleared', onSignalCleared);
-      socket.off('trip_ended', onTripEnded);
-      socket.disconnect(); // Disconnect when component unmounts
-    };
+    return () => socket.disconnect();
   }, []);
 
   return (
     <>
       <LogPanel logs={logs} /> 
       <MapContainer center={[16.5062, 80.6480]} zoom={14} style={{ height: '100vh', width: '100%' }}>
-        <TileLayer url="https://tiles.stadiamaps.com/tiles/alidade_smooth_dark/{z}/{x}/{y}{r}.png" attribution='&copy; <a href="https://stadiamaps.com/">Stadia Maps</a> &copy; <a href="https://openmaptiles.org/">OpenMapTiles</a> &copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors' />
+        <TileLayer url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png" />
+        
         {signals.map(signal => (
-          <SignalMarker key={signal.id} signal={signal} onSignalClick={handleSignalClick} />
+          <SignalMarker
+            key={signal.id}
+            signal={signal}
+            onSignalClick={handleSignalClick}
+          />
         ))}
+        
         {activeRoute && <Polyline positions={activeRoute.coordinates.map(p => [p[1], p[0]])} color="red" />}
         {ambulancePosition && <Marker position={ambulancePosition} icon={ambulanceIcon} />}
       </MapContainer>

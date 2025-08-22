@@ -28,6 +28,7 @@ function SignalMarker({ signal, onSignalClick }) {
       ref={markerRef}
       position={[signal.latitude, signal.longitude]}
       icon={defaultIcon}
+      // Add the event handler here
       eventHandlers={{
         click: () => {
           onSignalClick(signal.id);
@@ -42,5 +43,4 @@ function SignalMarker({ signal, onSignalClick }) {
   );
 }
 
-// --- THIS IS THE CRITICAL LINE THAT WAS MISSING ---
 export default SignalMarker;

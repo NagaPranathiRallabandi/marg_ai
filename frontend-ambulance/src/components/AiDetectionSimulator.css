@@ -1,0 +1,37 @@
+.ai-simulator-panel {
+  position: fixed;
+  top: 80px;
+  left: 50%;
+  transform: translateX(-50%);
+  background-color: white;
+  padding: 15px;
+  border-radius: 8px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+  z-index: 1000;
+  text-align: center;
+}
+
+.ai-simulator-panel h4 {
+  margin: 0 0 10px 0;
+}
+
+.simulator-buttons {
+  display: flex;
+  gap: 10px;
+}
+
+.simulator-buttons button {
+  padding: 8px 12px;
+  font-size: 0.9rem;
+  font-weight: bold;
+  color: white;
+  background-color: #dc3545; /* Red color */
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+  transition: background-color 0.2s;
+}
+
+.simulator-buttons button:hover {
+  background-color: #c82333;
+}

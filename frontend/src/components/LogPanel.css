@@ -1,42 +1,40 @@
 .log-panel {
   position: fixed;
   bottom: 20px;
-  right: 20px;
-  width: 350px;
-  height: 200px;
-  background-color: #333;
-  color: #f1f1f1;
+  left: 20px;
+  width: 300px; /* Reduced width */
+  max-height: 200px; /* Reduced max height */
+  background-color: var(--panel-background);
+  color: var(--text-color);
   border-radius: 8px;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.4);
   z-index: 1000;
+  border: 1px solid var(--border-color);
+  overflow: hidden;
   display: flex;
   flex-direction: column;
 }
 
 .log-panel h4 {
   margin: 0;
-  padding: 10px;
-  background-color: #444;
-  border-top-left-radius: 8px;
-  border-top-right-radius: 8px;
-  text-align: center;
+  padding: 8px 15px; /* Smaller padding */
+  border-bottom: 1px solid var(--border-color);
+  background-color: #2a2a2a;
+  font-size: 0.9rem; /* Smaller font size */
 }
 
 .log-content {
-  padding: 10px;
-  overflow-y: auto;
   flex-grow: 1;
+  padding: 8px 15px; /* Smaller padding */
+  overflow-y: auto;
+  font-family: monospace;
+  font-size: 0.8rem; /* Smaller font size for logs */
+  display: flex;
+  flex-direction: column-reverse; /* New logs appear at the top */
 }
 
 .log-content p {
-  margin: 0 0 5px 0;
-  font-family: 'Courier New', Courier, monospace;
-  font-size: 0.9rem;
-  border-bottom: 1px solid #555;
-  padding-bottom: 5px;
-}
-
-.log-content span {
-  color: #888;
-  margin-right: 8px;
+  margin: 3px 0; /* Reduced margin between lines */
+  padding-bottom: 3px;
+  border-bottom: 1px dashed #444;
 }
