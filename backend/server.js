@@ -46,31 +46,36 @@ app.post('/api/calculate-route', async (req, res) => {
 let activeTrip = null;
 
 const stopTrip = () => {
-    if (activeTrip && activeTrip.intervalId) {
-        clearInterval(activeTrip.intervalId);
-    }
-    activeTrip = null;
-    console.log('Server state: Trip stopped and cleared.');
+  if (activeTrip && activeTrip.intervalId) {
+    clearInterval(activeTrip.intervalId);
+  }
+  activeTrip = null;
+  console.log('Server state: Trip stopped and cleared.');
 };
 
 io.on('connection', (socket) => {
+  socket.on('cancel_trip', () => {
+    console.log('Received request to cancel trip.');
+    stopTrip(); // This function already exists and cleans everything up
+    io.emit('trip_ended'); // Notify all dashboards that the trip is over
+  });
   console.log(`Client connected: ${socket.id}. Total clients: ${io.engine.clientsCount}`);
-  
+
   if (activeTrip) {
     socket.emit('trip_started', { route: activeTrip.route, position: activeTrip.position });
   }
 
   socket.on('start_trip', (data) => {
-    stopTrip(); 
+    stopTrip();
     console.log('Server: Starting new trip simulation.');
-    
+
     activeTrip = {
-        route: data.route,
-        step: 0,
-        position: [data.route.coordinates[0][1], data.route.coordinates[0][0]],
-        intervalId: null
+      route: data.route,
+      step: 0,
+      position: [data.route.coordinates[0][1], data.route.coordinates[0][0]],
+      intervalId: null
     };
-    
+
     io.emit('trip_started', { route: activeTrip.route, position: activeTrip.position });
 
     activeTrip.intervalId = setInterval(() => {
@@ -79,14 +84,14 @@ io.on('connection', (socket) => {
         stopTrip();
         return;
       }
-      
+
       const newPosition = [activeTrip.route.coordinates[activeTrip.step][1], activeTrip.route.coordinates[activeTrip.step][0]];
       activeTrip.position = newPosition; // Update server state
       io.emit('update_location', { position: newPosition });
       activeTrip.step++;
     }, 1000);
   });
-  
+
   socket.on('manual_clear_signal', (data) => {
     io.emit('signal_cleared', { signalId: data.signalId, newStatus: 'GREEN' });
   });
@@ -94,7 +99,7 @@ io.on('connection', (socket) => {
   socket.on('disconnect', () => {
     console.log(`Client disconnected: ${socket.id}. Total clients: ${io.engine.clientsCount}`);
     if (io.engine.clientsCount === 0) {
-        stopTrip();
+      stopTrip();
     }
   });
 });
