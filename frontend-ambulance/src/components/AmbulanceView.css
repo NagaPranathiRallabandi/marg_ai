@@ -1,54 +1,99 @@
-.route-planner {
-  position: fixed;
-  top: 20px;
-  left: 50%;
-  transform: translateX(-50%);
-  background-color: var(--panel-background);
-  padding: 15px 25px;
-  border-radius: 8px;
-  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.4);
-  z-index: 1000;
-  text-align: center;
-  border: 1px solid var(--border-color);
+.ambulance-view {
   display: flex;
-  align-items: center;
-  gap: 10px;
+  height: 100vh;
+  width: 100%;
+  background-color: #1e1e1e;
+}
+
+.map-area {
+  flex-grow: 1;
+  height: 100%;
+}
+
+.sidebar {
+  width: 380px;
+  flex-shrink: 0;
+  padding: 15px;
+  background-color: #2c2c2c;
+  color: white;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  overflow-y: auto;
+  border-left: 1px solid #444;
+}
+
+.route-planner {
+  background-color: #383838;
+  padding: 20px;
+  border-radius: 8px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
 }
 
 .route-planner h2 {
-  margin: 0;
-  font-size: 1.2rem;
-  color: var(--text-color);
+  margin-top: 0;
+  margin-bottom: 15px;
+  font-size: 1.4em;
+  text-align: center;
+  color: #00e676;
+  font-weight: 600;
+}
+
+.route-planner select,
+.route-planner button {
+  width: 100%;
+  padding: 12px;
+  border-radius: 5px;
+  border: 1px solid #555;
+  background-color: #444;
+  color: white;
+  font-size: 1em;
 }
 
 .route-planner select {
-  padding: 8px;
-  font-size: 1rem;
-  background-color: #333;
-  color: var(--text-color);
-  border: 1px solid var(--border-color);
-  border-radius: 4px;
+  cursor: pointer;
 }
 
 .route-planner button {
-  padding: 10px 20px;
-  font-size: 1rem;
-  font-weight: bold;
-  color: white;
-  background-color: var(--primary-color);
-  border: none;
-  border-radius: 5px;
   cursor: pointer;
-  transition: background-color 0.2s;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+  font-weight: bold;
+  transition: background-color 0.3s, transform 0.1s;
 }
 
-.route-planner button:hover:not(:disabled) {
-  background-color: #218838;
+.route-planner button:active {
+    transform: scale(0.98);
+}
+
+.route-planner button:hover {
+  background-color: #0056b3;
 }
 
 .route-planner button:disabled {
-  background-color: #6c757d;
+  background-color: #555;
   cursor: not-allowed;
-  box-shadow: none;
+  opacity: 0.6;
+}
+
+.route-planner button:nth-of-type(1) {
+  background-color: #007bff;
+}
+.route-planner button:nth-of-type(2) {
+  background-color: #28a745;
+}
+.route-planner button:nth-of-type(1):hover {
+  background-color: #0069d9;
+}
+.route-planner button:nth-of-type(2):hover {
+  background-color: #218838;
+}
+
+
+.route-planner .cancel-button {
+  background-color: #dc3545;
+}
+
+.route-planner .cancel-button:hover {
+  background-color: #c82333;
 }
