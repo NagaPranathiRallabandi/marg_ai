@@ -3,12 +3,19 @@ const http = require('http');
 const { Server } = require("socket.io");
 const axios = require('axios');
 const cors = require('cors');
+const multer = require('multer');
+const FormData = require('form-data');
 require('dotenv').config();
 
 // --- Initialization ---
 const app = express();
 app.use(cors());
 app.use(express.json());
+
+// --- Multer Setup ---
+const storage = multer.memoryStorage();
+const upload = multer({ storage: storage });
+
 const server = http.createServer(app);
 const io = new Server(server, {
   cors: { origin: "*", methods: ["GET", "POST"] }
@@ -29,6 +36,57 @@ dbConnection.query('SELECT * FROM traffic_signals', (err, results) => {
 // --- API Routes ---
 const signalRoutes = require('./src/api/signalRoutes');
 app.use('/api', signalRoutes);
+
+// Keep track of detection counts for each signal
+const detectionCounts = {};
+
+app.post('/api/detect-vehicle/:signalId', upload.single('image'), async (req, res) => {
+  const signalId = req.params.signalId;
+
+  if (!req.file) {
+    return res.status(400).send({ error: 'No image provided.' });
+  }
+
+  // Initialize or increment the detection count
+  detectionCounts[signalId] = (detectionCounts[signalId] || 0) + 1;
+
+  // Only proceed if the vehicle has been "detected" twice
+  if (detectionCounts[signalId] < 2) {
+    return res.json({
+      message: `Frame ${detectionCounts[signalId]} received for signal ${signalId}. Awaiting second frame for confirmation.`
+    });
+  }
+
+  // Reset count after confirmation
+  detectionCounts[signalId] = 0;
+
+  try {
+    const formData = new FormData();
+    formData.append('image', req.file.buffer, {
+      filename: req.file.originalname,
+      contentType: req.file.mimetype,
+    });
+
+    const aiServiceUrl = 'http://localhost:5001/detect';
+    const response = await axios.post(aiServiceUrl, formData, {
+      headers: {
+        ...formData.getHeaders()
+      }
+    });
+
+    // If AI service confirms detection, emit a WebSocket event
+    if (response.data.vehicle_detected) {
+      console.log(`AI confirmed vehicle at signal ${signalId}. Clearing signal.`);
+      io.emit('signal_cleared', { signalId: parseInt(signalId), newStatus: 'GREEN' });
+    }
+
+    res.json(response.data);
+
+  } catch (error) {
+    console.error('Error forwarding image to AI service:', error.message);
+    res.status(500).send({ error: 'Failed to communicate with AI service.' });
+  }
+});
 
 // --- Routing Logic using OSRM ---
 app.post('/api/calculate-route', async (req, res) => {
